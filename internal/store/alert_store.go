@@ -255,3 +255,34 @@ func (s *Store) GetAlertCountByLevel(ctx context.Context, level model.AlertLevel
 	}
 	return count, nil
 }
+
+// BatchCreateAlerts 批量创建告警
+func (s *Store) BatchCreateAlerts(ctx context.Context, alerts []*model.Alert) ([]int64, error) {
+	var ids []int64
+	for _, alert := range alerts {
+		now := time.Now()
+		alert.CreatedAt = now
+		alert.UpdatedAt = now
+		if alert.Status == "" {
+			alert.Status = model.AlertStatusActive
+		}
+		result, err := s.db.ExecContext(ctx,
+			`INSERT INTO alerts (dam_id, point_id, level, status, title, message,
+				threshold, current_value, reading_type, acknowledged_by, acknowledged_at,
+				resolved_by, resolved_at, created_at, updated_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			alert.DamID, alert.PointID, string(alert.Level), string(alert.Status),
+			alert.Title, alert.Message, alert.Threshold, alert.CurrentValue,
+			alert.ReadingType, alert.AcknowledgedBy, nullableTime(alert.AcknowledgedAt),
+			alert.ResolvedBy, nullableTime(alert.ResolvedAt),
+			alert.CreatedAt, alert.UpdatedAt,
+		)
+		if err != nil {
+			continue
+		}
+		id, _ := result.LastInsertId()
+		alert.ID = id
+		ids = append(ids, id)
+	}
+	return ids, nil
+}

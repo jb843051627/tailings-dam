@@ -205,3 +205,34 @@ func (s *Store) GetPendingInspectionCount(ctx context.Context) (int64, error) {
 	}
 	return count, nil
 }
+
+// BatchCreateInspections 批量创建巡检
+func (s *Store) BatchCreateInspections(ctx context.Context, inspections []*model.Inspection) ([]int64, error) {
+	var ids []int64
+	for _, insp := range inspections {
+		now := time.Now()
+		insp.CreatedAt = now
+		insp.UpdatedAt = now
+		if insp.Status == "" {
+			insp.Status = model.InspectionStatusPending
+		}
+		if insp.Priority == "" {
+			insp.Priority = model.InspectionPriorityNormal
+		}
+		result, err := s.db.ExecContext(ctx,
+			`INSERT INTO inspections (dam_id, inspector, title, scheduled_date, completed_date,
+				findings, status, priority, created_at, updated_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			insp.DamID, insp.Inspector, insp.Title, insp.ScheduledDate,
+			nullableTime(insp.CompletedDate), insp.Findings,
+			string(insp.Status), string(insp.Priority), insp.CreatedAt, insp.UpdatedAt,
+		)
+		if err != nil {
+			continue
+		}
+		id, _ := result.LastInsertId()
+		insp.ID = id
+		ids = append(ids, id)
+	}
+	return ids, nil
+}
