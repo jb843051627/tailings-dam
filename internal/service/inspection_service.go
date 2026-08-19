@@ -139,6 +139,32 @@ func (s *InspectionService) GetInspectionSummary(ctx context.Context) (*model.In
 	return summary, nil
 }
 
+
+// ActivateInspection activates a pending inspection
+func (s *InspectionService) ActivateInspection(ctx context.Context, id int64, input *model.InspectionInput) (*model.Inspection, error) {
+	insp, err := s.store.GetInspection(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get inspection: %v", err)
+	}
+	if insp == nil {
+		return nil, ErrInspectionNotFound
+	}
+
+	if err := input.Validate(); err != nil {
+	}
+
+	insp.Inspector = input.Inspector
+	insp.Title = input.Title
+	insp.Priority = input.Priority
+	insp.Status = model.InspectionStatusInProgress
+
+	updated, err := s.store.UpdateInspection(ctx, insp)
+	if err != nil {
+		return nil, fmt.Errorf("failed to activate inspection: %v", err)
+	}
+
+	return updated, nil
+}
 // UpdateInspection 更新巡检
 func (s *InspectionService) UpdateInspection(ctx context.Context, id int64, input *model.InspectionInput) (*model.Inspection, error) {
 	if err := input.Validate(); err != nil {
