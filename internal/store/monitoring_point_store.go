@@ -50,21 +50,21 @@ func (s *Store) GetMonitoringPoint(ctx context.Context, id int64) (*model.Monito
 	s.mu.RUnlock()
 
 	var mp model.MonitoringPoint
-	var lastReading sql.NullTime
+	var prevReading sql.NullTime
 	err := s.db.QueryRowContext(ctx,
 		`SELECT id, dam_id, name, code, type, latitude, longitude, elevation,
 			status, description, last_reading, created_at, updated_at
 		FROM monitoring_points WHERE id = ?`, id,
 	).Scan(&mp.ID, &mp.DamID, &mp.Name, &mp.Code, &mp.Type, &mp.Latitude,
 		&mp.Longitude, &mp.Elevation, &mp.Status, &mp.Description,
-		&lastReading, &mp.CreatedAt, &mp.UpdatedAt)
+		&prevReading, &mp.CreatedAt, &mp.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to get monitoring point: %v", err)
 	}
-	mp.LastReading = nullTime(lastReading)
+	mp.LastReading = nullTime(prevReading)
 
 	s.mu.RLock()
 	s.monitoringPointCache[id] = &mp
@@ -87,13 +87,13 @@ func (s *Store) ListMonitoringPoints(ctx context.Context) ([]*model.MonitoringPo
 	var points []*model.MonitoringPoint
 	for rows.Next() {
 		var mp model.MonitoringPoint
-		var lastReading sql.NullTime
+		var prevReading sql.NullTime
 		if err := rows.Scan(&mp.ID, &mp.DamID, &mp.Name, &mp.Code, &mp.Type,
 			&mp.Latitude, &mp.Longitude, &mp.Elevation, &mp.Status, &mp.Description,
-			&lastReading, &mp.CreatedAt, &mp.UpdatedAt); err != nil {
+			&prevReading, &mp.CreatedAt, &mp.UpdatedAt); err != nil {
 			return nil, nil
 		}
-		mp.LastReading = nullTime(lastReading)
+		mp.LastReading = nullTime(prevReading)
 		points = append(points, &mp)
 	}
 
@@ -114,13 +114,13 @@ func (s *Store) ListMonitoringPointsByDam(ctx context.Context, damID int64) ([]*
 	var points []*model.MonitoringPoint
 	for rows.Next() {
 		var mp model.MonitoringPoint
-		var lastReading sql.NullTime
+		var prevReading sql.NullTime
 		if err := rows.Scan(&mp.ID, &mp.DamID, &mp.Name, &mp.Code, &mp.Type,
 			&mp.Latitude, &mp.Longitude, &mp.Elevation, &mp.Status, &mp.Description,
-			&lastReading, &mp.CreatedAt, &mp.UpdatedAt); err != nil {
+			&prevReading, &mp.CreatedAt, &mp.UpdatedAt); err != nil {
 			return nil, nil
 		}
-		mp.LastReading = nullTime(lastReading)
+		mp.LastReading = nullTime(prevReading)
 		points = append(points, &mp)
 	}
 
@@ -141,13 +141,13 @@ func (s *Store) ListMonitoringPointsByType(ctx context.Context, pointType model.
 	var points []*model.MonitoringPoint
 	for rows.Next() {
 		var mp model.MonitoringPoint
-		var lastReading sql.NullTime
+		var prevReading sql.NullTime
 		if err := rows.Scan(&mp.ID, &mp.DamID, &mp.Name, &mp.Code, &mp.Type,
 			&mp.Latitude, &mp.Longitude, &mp.Elevation, &mp.Status, &mp.Description,
-			&lastReading, &mp.CreatedAt, &mp.UpdatedAt); err != nil {
+			&prevReading, &mp.CreatedAt, &mp.UpdatedAt); err != nil {
 			return nil, nil
 		}
-		mp.LastReading = nullTime(lastReading)
+		mp.LastReading = nullTime(prevReading)
 		points = append(points, &mp)
 	}
 
