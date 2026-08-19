@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -50,10 +51,10 @@ func (s *DrainageService) CreateDrainageSystem(ctx context.Context, input *model
 func (s *DrainageService) GetDrainageSystem(ctx context.Context, id int64) (*model.DrainageSystem, error) {
 	d, err := s.store.GetDrainageSystem(ctx, id)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrDrainageNotFound
+		}
 		return nil, fmt.Errorf("failed to get drainage system: %v", err)
-	}
-	if d == nil {
-		return nil, ErrDrainageNotFound
 	}
 	return d, nil
 }
@@ -84,10 +85,10 @@ func (s *DrainageService) UpdateDrainageSystem(ctx context.Context, id int64, in
 
 	d, err := s.store.GetDrainageSystem(ctx, id)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrDrainageNotFound
+		}
 		return nil, fmt.Errorf("failed to get drainage system: %v", err)
-	}
-	if d == nil {
-		return nil, ErrDrainageNotFound
 	}
 
 	d.DamID = input.DamID
