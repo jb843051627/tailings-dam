@@ -101,7 +101,12 @@ func (s *Store) ListAlertsByDam(ctx context.Context, damID int64) ([]*model.Aler
 	s.mu.RLock()
 	if s.alertByDamCache != nil {
 		s.mu.RUnlock()
-		return s.alertByDamCache, nil
+		result := make([]*model.Alert, len(s.alertByDamCache))
+		for i, a := range s.alertByDamCache {
+			cp := *a
+			result[i] = &cp
+		}
+		return result, nil
 	}
 	s.mu.RUnlock()
 
@@ -124,7 +129,12 @@ func (s *Store) ListAlertsByDam(ctx context.Context, damID int64) ([]*model.Aler
 	s.alertByDamCache = alerts
 	s.mu.RUnlock()
 
-	return alerts, nil
+	result := make([]*model.Alert, len(alerts))
+	for i, a := range alerts {
+		cp := *a
+		result[i] = &cp
+	}
+	return result, nil
 }
 
 // ListAlertsByStatus 按状态列出告警
@@ -132,7 +142,12 @@ func (s *Store) ListAlertsByStatus(ctx context.Context, status model.AlertStatus
 	s.mu.RLock()
 	if s.alertByStatusCache != nil {
 		s.mu.RUnlock()
-		return s.alertByStatusCache, nil
+		result := make([]*model.Alert, len(s.alertByStatusCache))
+		for i, a := range s.alertByStatusCache {
+			cp := *a
+			result[i] = &cp
+		}
+		return result, nil
 	}
 	s.mu.RUnlock()
 
@@ -155,7 +170,12 @@ func (s *Store) ListAlertsByStatus(ctx context.Context, status model.AlertStatus
 	s.alertByStatusCache = alerts
 	s.mu.RUnlock()
 
-	return alerts, nil
+	result := make([]*model.Alert, len(alerts))
+	for i, a := range alerts {
+		cp := *a
+		result[i] = &cp
+	}
+	return result, nil
 }
 
 // ListAlertsByLevel 按等级列出告警
