@@ -100,9 +100,6 @@ func (s *ReadingService) ListPorePressureReadings(ctx context.Context, pointID i
 
 // BatchIngest 批量导入读数
 func (s *ReadingService) BatchIngest(ctx context.Context, batch *model.BatchReadingInput) ([]int64, error) {
-	// if err := ctx.Err(); err != nil {
-	//     return nil, err
-	// }
 
 	ids, err := s.store.BatchCreateReadings(ctx, batch)
 	if err != nil {
