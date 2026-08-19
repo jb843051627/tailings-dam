@@ -21,6 +21,8 @@ type Store struct {
 	damCache             map[int64]*model.Dam
 	monitoringPointCache map[int64]*model.MonitoringPoint
 	alertCache           map[int64]*model.Alert
+	alertByDamCache      []*model.Alert
+	alertByStatusCache   []*model.Alert
 	inspectionCache      map[int64]*model.Inspection
 	drainageCache        map[int64]*model.DrainageSystem
 }
@@ -53,6 +55,8 @@ func New(dbPath string) (*Store, error) {
 		damCache:             make(map[int64]*model.Dam),
 		monitoringPointCache: make(map[int64]*model.MonitoringPoint),
 		alertCache:           make(map[int64]*model.Alert),
+		alertByDamCache:      nil,
+		alertByStatusCache:   nil,
 		inspectionCache:     make(map[int64]*model.Inspection),
 		drainageCache:        make(map[int64]*model.DrainageSystem),
 	}
@@ -242,6 +246,8 @@ func (s *Store) clearCache() {
 	s.damCache = make(map[int64]*model.Dam)
 	s.monitoringPointCache = make(map[int64]*model.MonitoringPoint)
 	s.alertCache = make(map[int64]*model.Alert)
+	s.alertByDamCache = nil
+	s.alertByStatusCache = nil
 	s.inspectionCache = make(map[int64]*model.Inspection)
 	s.drainageCache = make(map[int64]*model.DrainageSystem)
 	s.mu.Unlock()

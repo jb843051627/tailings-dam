@@ -98,6 +98,13 @@ func (s *Store) ListAlerts(ctx context.Context) ([]*model.Alert, error) {
 
 // ListAlertsByDam 按坝体 ID 列出告警
 func (s *Store) ListAlertsByDam(ctx context.Context, damID int64) ([]*model.Alert, error) {
+	s.mu.RLock()
+	if s.alertByDamCache != nil {
+		s.mu.RUnlock()
+		return s.alertByDamCache, nil
+	}
+	s.mu.RUnlock()
+
 	rows, err := s.db.QueryContext(ctx,
 		`SELECT id, dam_id, point_id, level, status, title, message, threshold,
 			current_value, reading_type, acknowledged_by, acknowledged_at, resolved_by,
@@ -108,11 +115,27 @@ func (s *Store) ListAlertsByDam(ctx context.Context, damID int64) ([]*model.Aler
 	}
 	defer rows.Close()
 
-	return scanAlerts(rows)
+	alerts, err := scanAlerts(rows)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan alerts by dam: %v", err)
+	}
+
+	s.mu.RLock()
+	s.alertByDamCache = alerts
+	s.mu.RUnlock()
+
+	return alerts, nil
 }
 
 // ListAlertsByStatus 按状态列出告警
 func (s *Store) ListAlertsByStatus(ctx context.Context, status model.AlertStatus) ([]*model.Alert, error) {
+	s.mu.RLock()
+	if s.alertByStatusCache != nil {
+		s.mu.RUnlock()
+		return s.alertByStatusCache, nil
+	}
+	s.mu.RUnlock()
+
 	rows, err := s.db.QueryContext(ctx,
 		`SELECT id, dam_id, point_id, level, status, title, message, threshold,
 			current_value, reading_type, acknowledged_by, acknowledged_at, resolved_by,
@@ -123,7 +146,16 @@ func (s *Store) ListAlertsByStatus(ctx context.Context, status model.AlertStatus
 	}
 	defer rows.Close()
 
-	return scanAlerts(rows)
+	alerts, err := scanAlerts(rows)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan alerts by status: %v", err)
+	}
+
+	s.mu.RLock()
+	s.alertByStatusCache = alerts
+	s.mu.RUnlock()
+
+	return alerts, nil
 }
 
 // ListAlertsByLevel 按等级列出告警
