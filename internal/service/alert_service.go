@@ -26,13 +26,13 @@ func NewAlertService(s *store.Store) *AlertService {
 // CreateAlert 创建告警
 func (s *AlertService) CreateAlert(ctx context.Context, input *model.AlertInput) (*model.Alert, error) {
 	if err := input.Validate(); err != nil {
-		return nil, fmt.Errorf("validation failed: %v", err)
+		return nil, fmt.Errorf("validation failed: %w", err)
 	}
 
 	alert := input.ToAlert()
 	created, err := s.store.CreateAlert(ctx, alert)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create alert: %v", err)
+		return nil, fmt.Errorf("failed to create alert: %w", err)
 	}
 
 	return created, nil
@@ -42,7 +42,7 @@ func (s *AlertService) CreateAlert(ctx context.Context, input *model.AlertInput)
 func (s *AlertService) GetAlert(ctx context.Context, id int64) (*model.Alert, error) {
 	alert, err := s.store.GetAlert(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get alert: %v", err)
+		return nil, fmt.Errorf("failed to get alert: %w", err)
 	}
 	if alert == nil {
 		return nil, ErrAlertNotFound
@@ -54,7 +54,7 @@ func (s *AlertService) GetAlert(ctx context.Context, id int64) (*model.Alert, er
 func (s *AlertService) ListAlerts(ctx context.Context) ([]*model.Alert, error) {
 	alerts, err := s.store.ListAlerts(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list alerts: %v", err)
+		return nil, fmt.Errorf("failed to list alerts: %w", err)
 	}
 
 	sort.Slice(alerts, func(i, j int) bool {
@@ -68,7 +68,7 @@ func (s *AlertService) ListAlerts(ctx context.Context) ([]*model.Alert, error) {
 func (s *AlertService) ListActiveAlerts(ctx context.Context) ([]*model.Alert, error) {
 	alerts, err := s.store.ListAlertsByStatus(ctx, model.AlertStatusActive)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list active alerts: %v", err)
+		return nil, fmt.Errorf("failed to list active alerts: %w", err)
 	}
 
 	sort.Slice(alerts, func(i, j int) bool {
@@ -82,7 +82,7 @@ func (s *AlertService) ListActiveAlerts(ctx context.Context) ([]*model.Alert, er
 func (s *AlertService) ListAlertsByDam(ctx context.Context, damID int64) ([]*model.Alert, error) {
 	alerts, err := s.store.ListAlertsByDam(ctx, damID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list alerts by dam: %v", err)
+		return nil, fmt.Errorf("failed to list alerts by dam: %w", err)
 	}
 	return alerts, nil
 }
@@ -91,7 +91,7 @@ func (s *AlertService) ListAlertsByDam(ctx context.Context, damID int64) ([]*mod
 func (s *AlertService) ResolveAlert(ctx context.Context, id int64, resolvedBy string) error {
 	alert, err := s.store.GetAlert(ctx, id)
 	if err != nil {
-		return fmt.Errorf("failed to get alert: %v", err)
+		return fmt.Errorf("failed to get alert: %w", err)
 	}
 	if alert == nil {
 		return ErrAlertNotFound
@@ -103,7 +103,7 @@ func (s *AlertService) ResolveAlert(ctx context.Context, id int64, resolvedBy st
 
 	err = s.store.ResolveAlert(ctx, id, resolvedBy)
 	if err != nil {
-		return fmt.Errorf("failed to resolve alert: %v", err)
+		return fmt.Errorf("failed to resolve alert: %w", err)
 	}
 
 	return nil
@@ -113,7 +113,7 @@ func (s *AlertService) ResolveAlert(ctx context.Context, id int64, resolvedBy st
 func (s *AlertService) AcknowledgeAlert(ctx context.Context, id int64, ackBy string) error {
 	alert, err := s.store.GetAlert(ctx, id)
 	if err != nil {
-		return fmt.Errorf("failed to get alert: %v", err)
+		return fmt.Errorf("failed to get alert: %w", err)
 	}
 	if alert == nil {
 		return ErrAlertNotFound
@@ -121,7 +121,7 @@ func (s *AlertService) AcknowledgeAlert(ctx context.Context, id int64, ackBy str
 
 	err = s.store.AcknowledgeAlert(ctx, id, ackBy)
 	if err != nil {
-		return fmt.Errorf("failed to acknowledge alert: %v", err)
+		return fmt.Errorf("failed to acknowledge alert: %w", err)
 	}
 
 	return nil
@@ -155,7 +155,7 @@ func (s *AlertService) CheckAndCreateAlert(ctx context.Context, damID, pointID i
 
 	created, err := s.store.CreateAlert(ctx, alert)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create alert: %v", err)
+		return nil, fmt.Errorf("failed to create alert: %w", err)
 	}
 
 	return created, nil
@@ -171,7 +171,7 @@ func (s *AlertService) CheckSeepageReading(ctx context.Context, damID, pointID i
 		alert := alertInput.ToAlert()
 		created, err := s.store.CreateAlert(ctx, alert)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create seepage alert: %v", err)
+			return nil, fmt.Errorf("failed to create seepage alert: %w", err)
 		}
 		alerts = append(alerts, created)
 	}
@@ -189,7 +189,7 @@ func (s *AlertService) CheckDisplacementReading(ctx context.Context, damID, poin
 		alert := alertInput.ToAlert()
 		created, err := s.store.CreateAlert(ctx, alert)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create displacement alert: %v", err)
+			return nil, fmt.Errorf("failed to create displacement alert: %w", err)
 		}
 		alerts = append(alerts, created)
 	}
@@ -207,7 +207,7 @@ func (s *AlertService) CheckPorePressureReading(ctx context.Context, damID, poin
 		alert := alertInput.ToAlert()
 		created, err := s.store.CreateAlert(ctx, alert)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create pore pressure alert: %v", err)
+			return nil, fmt.Errorf("failed to create pore pressure alert: %w", err)
 		}
 		alerts = append(alerts, created)
 	}
@@ -219,7 +219,7 @@ func (s *AlertService) CheckPorePressureReading(ctx context.Context, damID, poin
 func (s *AlertService) GetAlertStatistics(ctx context.Context) (*model.AlertStatistics, error) {
 	alerts, err := s.store.ListAlerts(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list alerts for statistics: %v", err)
+		return nil, fmt.Errorf("failed to list alerts for statistics: %w", err)
 	}
 
 	stats := &model.AlertStatistics{}
