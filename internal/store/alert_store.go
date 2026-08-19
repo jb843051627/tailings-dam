@@ -258,6 +258,11 @@ func (s *Store) GetAlertCountByLevel(ctx context.Context, level model.AlertLevel
 
 // BatchCreateAlerts 批量创建告警
 func (s *Store) BatchCreateAlerts(ctx context.Context, alerts []*model.Alert) ([]int64, error) {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
 	var ids []int64
 	for _, alert := range alerts {
 		now := time.Now()
@@ -266,7 +271,7 @@ func (s *Store) BatchCreateAlerts(ctx context.Context, alerts []*model.Alert) ([
 		if alert.Status == "" {
 			alert.Status = model.AlertStatusActive
 		}
-		result, err := s.db.ExecContext(ctx,
+		result, err := tx.ExecContext(ctx,
 			`INSERT INTO alerts (dam_id, point_id, level, status, title, message,
 				threshold, current_value, reading_type, acknowledged_by, acknowledged_at,
 				resolved_by, resolved_at, created_at, updated_at)
@@ -278,11 +283,16 @@ func (s *Store) BatchCreateAlerts(ctx context.Context, alerts []*model.Alert) ([
 			alert.CreatedAt, alert.UpdatedAt,
 		)
 		if err != nil {
-			continue
+			tx.Rollback()
+			return nil, fmt.Errorf("failed to create alert: %w", err)
 		}
 		id, _ := result.LastInsertId()
 		alert.ID = id
 		ids = append(ids, id)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("failed to commit batch alerts: %w", err)
 	}
 	return ids, nil
 }
