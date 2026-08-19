@@ -62,9 +62,9 @@ type DrainageInput struct {
 
 // ToDrainageSystem 将输入转换为 DrainageSystem 实体
 func (input *DrainageInput) ToDrainageSystem() *DrainageSystem {
-	var lastInspection, nextInspection time.Time
+	var prevInspection, nextInspection time.Time
 	if input.LastInspection != "" {
-		lastInspection, _ = time.Parse(time.RFC3339, input.LastInspection)
+		prevInspection, _ = time.Parse(time.RFC3339, input.LastInspection)
 	}
 	if input.NextInspection != "" {
 		nextInspection, _ = time.Parse(time.RFC3339, input.NextInspection)
@@ -83,7 +83,7 @@ func (input *DrainageInput) ToDrainageSystem() *DrainageSystem {
 		Diameter:       input.Diameter,
 		Length:         input.Length,
 		Material:       input.Material,
-		LastInspection: lastInspection,
+		LastInspection: prevInspection,
 		NextInspection: nextInspection,
 		Notes:          input.Notes,
 	}
