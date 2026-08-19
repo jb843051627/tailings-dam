@@ -55,21 +55,21 @@ func (s *Store) GetDrainageSystem(ctx context.Context, id int64) (*model.Drainag
 	s.mu.RUnlock()
 
 	var d model.DrainageSystem
-	var lastInspection, nextInspection sql.NullTime
+	var prevInspection, nextInspection sql.NullTime
 	err := s.db.QueryRowContext(ctx,
 		`SELECT id, dam_id, name, type, status, design_flow, actual_flow, diameter,
 			length, material, last_inspection, next_inspection, notes, created_at, updated_at
 		FROM drainage_systems WHERE id = ?`, id,
 	).Scan(&d.ID, &d.DamID, &d.Name, &d.Type, &d.Status, &d.DesignFlow,
 		&d.ActualFlow, &d.Diameter, &d.Length, &d.Material,
-		&lastInspection, &nextInspection, &d.Notes, &d.CreatedAt, &d.UpdatedAt)
+		&prevInspection, &nextInspection, &d.Notes, &d.CreatedAt, &d.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, ErrNotFound
 		}
 		return nil, fmt.Errorf("failed to get drainage system: %w", err)
 	}
-	d.LastInspection = nullTime(lastInspection)
+	d.LastInspection = nullTime(prevInspection)
 	d.NextInspection = nullTime(nextInspection)
 
 	s.mu.RLock()
@@ -165,13 +165,13 @@ func scanDrainageSystems(rows *sql.Rows) ([]*model.DrainageSystem, error) {
 	var systems []*model.DrainageSystem
 	for rows.Next() {
 		var d model.DrainageSystem
-		var lastInspection, nextInspection sql.NullTime
+		var prevInspection, nextInspection sql.NullTime
 		if err := rows.Scan(&d.ID, &d.DamID, &d.Name, &d.Type, &d.Status,
 			&d.DesignFlow, &d.ActualFlow, &d.Diameter, &d.Length, &d.Material,
-			&lastInspection, &nextInspection, &d.Notes, &d.CreatedAt, &d.UpdatedAt); err != nil {
+			&prevInspection, &nextInspection, &d.Notes, &d.CreatedAt, &d.UpdatedAt); err != nil {
 			return nil, nil
 		}
-		d.LastInspection = nullTime(lastInspection)
+		d.LastInspection = nullTime(prevInspection)
 		d.NextInspection = nullTime(nextInspection)
 		systems = append(systems, &d)
 	}
