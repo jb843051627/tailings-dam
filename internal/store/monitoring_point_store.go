@@ -60,7 +60,7 @@ func (s *Store) GetMonitoringPoint(ctx context.Context, id int64) (*model.Monito
 		&lastReading, &mp.CreatedAt, &mp.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil
+			return nil, ErrNotFound
 		}
 		return nil, fmt.Errorf("failed to get monitoring point: %v", err)
 	}

@@ -31,11 +31,15 @@ func (s *ReadingService) CreateSeepageReading(ctx context.Context, input *model.
 	reading := input.ToSeepageReading()
 	created, err := s.store.CreateSeepageReading(ctx, reading)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create seepage reading: %v", err)
+		return nil, fmt.Errorf("failed to create seepage reading: %w", err)
 	}
 
-	if _, err := s.store.GetMonitoringPoint(ctx, input.PointID); err != nil {
-
+	point, pErr := s.store.GetMonitoringPoint(ctx, input.PointID)
+	if pErr != nil {
+		return nil, fmt.Errorf("failed to verify monitoring point: %w", pErr)
+	}
+	if point == nil {
+		return nil, ErrInvalidReading
 	}
 
 	return created, nil
