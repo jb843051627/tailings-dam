@@ -151,6 +151,7 @@ func (s *InspectionService) ActivateInspection(ctx context.Context, id int64, in
 	}
 
 	if err := input.Validate(); err != nil {
+		return nil, fmt.Errorf("validation failed: %v", err)
 	}
 
 	insp.Inspector = input.Inspector
