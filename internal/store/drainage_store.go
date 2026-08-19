@@ -65,9 +65,9 @@ func (s *Store) GetDrainageSystem(ctx context.Context, id int64) (*model.Drainag
 		&lastInspection, &nextInspection, &d.Notes, &d.CreatedAt, &d.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil
+			return nil, ErrNotFound
 		}
-		return nil, fmt.Errorf("failed to get drainage system: %v", err)
+		return nil, fmt.Errorf("failed to get drainage system: %w", err)
 	}
 	d.LastInspection = nullTime(lastInspection)
 	d.NextInspection = nullTime(nextInspection)

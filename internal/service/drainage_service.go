@@ -31,7 +31,7 @@ func (s *DrainageService) CreateDrainageSystem(ctx context.Context, input *model
 	// 验证坝体是否存在
 	dam, err := s.store.GetDam(ctx, input.DamID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to verify dam: %v", err)
+		return nil, fmt.Errorf("failed to verify dam: %w", err)
 	}
 	if dam == nil {
 		return nil, ErrPointDamNotFound
@@ -40,7 +40,7 @@ func (s *DrainageService) CreateDrainageSystem(ctx context.Context, input *model
 	d := input.ToDrainageSystem()
 	created, err := s.store.CreateDrainageSystem(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create drainage system: %v", err)
+		return nil, fmt.Errorf("failed to create drainage system: %w", err)
 	}
 
 	return created, nil
@@ -50,7 +50,7 @@ func (s *DrainageService) CreateDrainageSystem(ctx context.Context, input *model
 func (s *DrainageService) GetDrainageSystem(ctx context.Context, id int64) (*model.DrainageSystem, error) {
 	d, err := s.store.GetDrainageSystem(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get drainage system: %v", err)
+		return nil, fmt.Errorf("failed to get drainage system: %w", err)
 	}
 	if d == nil {
 		return nil, ErrDrainageNotFound

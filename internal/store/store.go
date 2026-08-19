@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -11,6 +12,9 @@ import (
 
 	_ "modernc.org/sqlite"
 )
+
+// ErrNotFound record not found in store
+var ErrNotFound = errors.New("record not found")
 
 // Store 数据存储层，包含数据库连接和缓存
 type Store struct {
