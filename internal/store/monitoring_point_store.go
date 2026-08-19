@@ -3,11 +3,15 @@ package store
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
 	"tailings-dam/internal/model"
 )
+
+// ErrMonitoringPointNotFound 表示指定 ID 的监测点不存在
+var ErrMonitoringPointNotFound = errors.New("monitoring point not found")
 
 // CreateMonitoringPoint 创建监测点
 func (s *Store) CreateMonitoringPoint(ctx context.Context, mp *model.MonitoringPoint) (*model.MonitoringPoint, error) {
@@ -60,7 +64,7 @@ func (s *Store) GetMonitoringPoint(ctx context.Context, id int64) (*model.Monito
 		&prevReading, &mp.CreatedAt, &mp.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil
+			return nil, ErrMonitoringPointNotFound
 		}
 		return nil, fmt.Errorf("failed to get monitoring point: %v", err)
 	}

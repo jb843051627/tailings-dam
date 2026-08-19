@@ -51,10 +51,10 @@ func (s *MonitoringService) CreateMonitoringPoint(ctx context.Context, input *mo
 func (s *MonitoringService) GetMonitoringPoint(ctx context.Context, id int64) (*model.MonitoringPoint, error) {
 	mp, err := s.store.GetMonitoringPoint(ctx, id)
 	if err != nil {
+		if errors.Is(err, store.ErrMonitoringPointNotFound) {
+			return nil, ErrPointNotFound
+		}
 		return nil, fmt.Errorf("failed to get monitoring point: %v", err)
-	}
-	if mp == nil {
-		return nil, ErrPointNotFound
 	}
 
 	if !mp.LastReading.IsZero() {
@@ -92,10 +92,10 @@ func (s *MonitoringService) UpdateMonitoringPoint(ctx context.Context, id int64,
 
 	mp, err := s.store.GetMonitoringPoint(ctx, id)
 	if err != nil {
+		if errors.Is(err, store.ErrMonitoringPointNotFound) {
+			return nil, ErrPointNotFound
+		}
 		return nil, fmt.Errorf("failed to get monitoring point: %v", err)
-	}
-	if mp == nil {
-		return nil, ErrPointNotFound
 	}
 
 	mp.DamID = input.DamID
@@ -120,16 +120,14 @@ func (s *MonitoringService) UpdateMonitoringPoint(ctx context.Context, id int64,
 
 // DeleteMonitoringPoint 删除监测点
 func (s *MonitoringService) DeleteMonitoringPoint(ctx context.Context, id int64) error {
-	mp, err := s.store.GetMonitoringPoint(ctx, id)
-	if err != nil {
+	if _, err := s.store.GetMonitoringPoint(ctx, id); err != nil {
+		if errors.Is(err, store.ErrMonitoringPointNotFound) {
+			return ErrPointNotFound
+		}
 		return fmt.Errorf("failed to get monitoring point: %v", err)
 	}
-	if mp == nil {
-		return ErrPointNotFound
-	}
 
-	err = s.store.DeleteMonitoringPoint(ctx, id)
-	if err != nil {
+	if err := s.store.DeleteMonitoringPoint(ctx, id); err != nil {
 		return fmt.Errorf("failed to delete monitoring point: %v", err)
 	}
 
@@ -149,10 +147,10 @@ func (s *MonitoringService) GetMonitoringPointCount(ctx context.Context) (int64,
 func (s *MonitoringService) GetPointLastReadingTime(ctx context.Context, pointID int64) (time.Time, error) {
 	mp, err := s.store.GetMonitoringPoint(ctx, pointID)
 	if err != nil {
+		if errors.Is(err, store.ErrMonitoringPointNotFound) {
+			return time.Time{}, ErrPointNotFound
+		}
 		return time.Time{}, fmt.Errorf("failed to get monitoring point: %v", err)
-	}
-	if mp == nil {
-		return time.Time{}, ErrPointNotFound
 	}
 
 	return mp.LastReading, nil

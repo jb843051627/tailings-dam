@@ -28,14 +28,18 @@ func (s *ReadingService) CreateSeepageReading(ctx context.Context, input *model.
 		return nil, fmt.Errorf("validation failed: %v", err)
 	}
 
+	// 校验监测点是否存在，不存在时返回错误而非让上层拿到 nil 指针
+	if _, err := s.store.GetMonitoringPoint(ctx, input.PointID); err != nil {
+		if errors.Is(err, store.ErrMonitoringPointNotFound) {
+			return nil, ErrPointNotFound
+		}
+		return nil, fmt.Errorf("failed to get monitoring point: %v", err)
+	}
+
 	reading := input.ToSeepageReading()
 	created, err := s.store.CreateSeepageReading(ctx, reading)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create seepage reading: %v", err)
-	}
-
-	if _, err := s.store.GetMonitoringPoint(ctx, input.PointID); err != nil {
-
 	}
 
 	return created, nil
