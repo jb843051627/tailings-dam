@@ -51,7 +51,7 @@ func (s *InspectionService) CreateInspection(ctx context.Context, input *model.I
 func (s *InspectionService) GetInspection(ctx context.Context, id int64) (*model.Inspection, error) {
 	insp, err := s.store.GetInspection(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get inspection: %v", err)
+		return nil, fmt.Errorf("failed to get inspection: %w", err)
 	}
 	if insp == nil {
 		return nil, ErrInspectionNotFound
@@ -91,7 +91,7 @@ func (s *InspectionService) ListInspectionsByDam(ctx context.Context, damID int6
 func (s *InspectionService) CompleteInspection(ctx context.Context, id int64, findings string) error {
 	insp, err := s.store.GetInspection(ctx, id)
 	if err != nil {
-		return fmt.Errorf("failed to get inspection: %v", err)
+		return fmt.Errorf("failed to get inspection: %w", err)
 	}
 	if insp == nil {
 		return ErrInspectionNotFound
@@ -144,13 +144,14 @@ func (s *InspectionService) GetInspectionSummary(ctx context.Context) (*model.In
 func (s *InspectionService) ActivateInspection(ctx context.Context, id int64, input *model.InspectionInput) (*model.Inspection, error) {
 	insp, err := s.store.GetInspection(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get inspection: %v", err)
+		return nil, fmt.Errorf("failed to get inspection: %w", err)
 	}
 	if insp == nil {
 		return nil, ErrInspectionNotFound
 	}
 
 	if err := input.Validate(); err != nil {
+		return nil, fmt.Errorf("validation failed: %w", err)
 	}
 
 	insp.Inspector = input.Inspector
@@ -160,7 +161,7 @@ func (s *InspectionService) ActivateInspection(ctx context.Context, id int64, in
 
 	updated, err := s.store.UpdateInspection(ctx, insp)
 	if err != nil {
-		return nil, fmt.Errorf("failed to activate inspection: %v", err)
+		return nil, fmt.Errorf("failed to activate inspection: %w", err)
 	}
 
 	return updated, nil
@@ -173,7 +174,7 @@ func (s *InspectionService) UpdateInspection(ctx context.Context, id int64, inpu
 
 	insp, err := s.store.GetInspection(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get inspection: %v", err)
+		return nil, fmt.Errorf("failed to get inspection: %w", err)
 	}
 	if insp == nil {
 		return nil, ErrInspectionNotFound
