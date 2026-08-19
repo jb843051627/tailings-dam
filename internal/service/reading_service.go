@@ -34,9 +34,8 @@ func (s *ReadingService) CreateSeepageReading(ctx context.Context, input *model.
 		return nil, fmt.Errorf("failed to create seepage reading: %v", err)
 	}
 
-	// bug-009: error shadowing - 如果 GetMonitoringPoint 返回错误，错误不会被返回
 	if _, err := s.store.GetMonitoringPoint(ctx, input.PointID); err != nil {
-		// 错误被吞掉
+
 	}
 
 	return created, nil
@@ -100,9 +99,7 @@ func (s *ReadingService) ListPorePressureReadings(ctx context.Context, pointID i
 }
 
 // BatchIngest 批量导入读数
-// bug-005: 不检查 ctx.Err()，即使 context 已取消也会继续处理
 func (s *ReadingService) BatchIngest(ctx context.Context, batch *model.BatchReadingInput) ([]int64, error) {
-	// bug-005: 应该检查 ctx.Err() 但没有
 	// if err := ctx.Err(); err != nil {
 	//     return nil, err
 	// }

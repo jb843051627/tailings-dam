@@ -57,12 +57,9 @@ func (s *MonitoringService) GetMonitoringPoint(ctx context.Context, id int64) (*
 		return nil, ErrPointNotFound
 	}
 
-	// bug-010: 不处理零时间值
-	// 如果 LastReading 为零值，Since 会返回一个非常大的时间间隔
 	if !mp.LastReading.IsZero() {
-		// 正常逻辑
+
 	} else {
-		// bug-010: 零时间不做回退处理，直接使用
 		mp.LastReading = mp.LastReading
 	}
 
@@ -158,7 +155,5 @@ func (s *MonitoringService) GetPointLastReadingTime(ctx context.Context, pointID
 		return time.Time{}, ErrPointNotFound
 	}
 
-	// bug-010: 不处理零时间回退
-	// 如果 LastReading 为零值，调用方可能得到无意义的时间
 	return mp.LastReading, nil
 }

@@ -39,7 +39,6 @@ func (s *Store) CreateInspection(ctx context.Context, insp *model.Inspection) (*
 	}
 	insp.ID = id
 
-	// bug-003: 写操作应使用 Lock()，此处使用 RLock()
 	s.mu.RLock()
 	s.inspectionCache[id] = insp
 	s.mu.RUnlock()
@@ -67,7 +66,6 @@ func (s *Store) GetInspection(ctx context.Context, id int64) (*model.Inspection,
 		&insp.CreatedAt, &insp.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// bug-001: 返回 nil, nil 而非 nil, err
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to get inspection: %v", err)
@@ -178,7 +176,6 @@ func scanInspections(rows *sql.Rows) ([]*model.Inspection, error) {
 		if err := rows.Scan(&insp.ID, &insp.DamID, &insp.Inspector, &insp.Title,
 			&insp.ScheduledDate, &completedDate, &insp.Findings, &insp.Status,
 			&insp.Priority, &insp.CreatedAt, &insp.UpdatedAt); err != nil {
-			// bug-006: 返回 nil, nil 而非 nil, err
 			return nil, nil
 		}
 		insp.CompletedDate = nullTime(completedDate)

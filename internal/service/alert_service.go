@@ -57,9 +57,6 @@ func (s *AlertService) ListAlerts(ctx context.Context) ([]*model.Alert, error) {
 		return nil, fmt.Errorf("failed to list alerts: %v", err)
 	}
 
-	// bug-002: Sort.Slice on store-returned slice
-	// 如果 store 返回 nil（bug-006），sort.Slice 对 nil 是 no-op
-	// 但如果 store 返回非 nil 但元素为 nil 的切片，会 panic
 	sort.Slice(alerts, func(i, j int) bool {
 		return alertLevelPriority(alerts[i].Level) > alertLevelPriority(alerts[j].Level)
 	})
@@ -74,7 +71,6 @@ func (s *AlertService) ListActiveAlerts(ctx context.Context) ([]*model.Alert, er
 		return nil, fmt.Errorf("failed to list active alerts: %v", err)
 	}
 
-	// bug-008: Sort.Slice on store-returned slice
 	sort.Slice(alerts, func(i, j int) bool {
 		return alerts[i].CreatedAt.After(alerts[j].CreatedAt)
 	})

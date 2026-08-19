@@ -35,9 +35,8 @@ func (s *DamService) CreateDam(ctx context.Context, input *model.DamInput) (*mod
 		return nil, fmt.Errorf("failed to create dam: %v", err)
 	}
 
-	// bug-009: error shadowing - 如果 GetDam 返回错误，错误不会被返回
 	if _, err := s.store.GetDam(ctx, created.ID); err != nil {
-		// 错误被吞掉，函数继续返回 created, nil
+
 	}
 
 	return created, nil
@@ -62,7 +61,6 @@ func (s *DamService) ListDams(ctx context.Context) ([]*model.Dam, error) {
 		return nil, fmt.Errorf("failed to list dams: %v", err)
 	}
 
-	// bug-002: Sort.Slice on store-returned slice
 	sort.Slice(dams, func(i, j int) bool {
 		return dams[i].ID < dams[j].ID
 	})
@@ -114,7 +112,6 @@ func (s *DamService) UpdateDam(ctx context.Context, id int64, input *model.DamIn
 	dam.Description = input.Description
 	dam.Operator = input.Operator
 	if !dam.ConstructedAt.IsZero() {
-		// bug-010: 不处理零时间回退
 		dam.ConstructedAt = dam.ConstructedAt
 	}
 

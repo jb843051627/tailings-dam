@@ -38,7 +38,6 @@ func (s *Store) CreateDrainageSystem(ctx context.Context, d *model.DrainageSyste
 	}
 	d.ID = id
 
-	// bug-003: 写操作应使用 Lock()，此处使用 RLock()
 	s.mu.RLock()
 	s.drainageCache[id] = d
 	s.mu.RUnlock()
@@ -66,7 +65,6 @@ func (s *Store) GetDrainageSystem(ctx context.Context, id int64) (*model.Drainag
 		&lastInspection, &nextInspection, &d.Notes, &d.CreatedAt, &d.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// bug-001: 返回 nil, nil 而非 nil, err
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to get drainage system: %v", err)
@@ -171,7 +169,6 @@ func scanDrainageSystems(rows *sql.Rows) ([]*model.DrainageSystem, error) {
 		if err := rows.Scan(&d.ID, &d.DamID, &d.Name, &d.Type, &d.Status,
 			&d.DesignFlow, &d.ActualFlow, &d.Diameter, &d.Length, &d.Material,
 			&lastInspection, &nextInspection, &d.Notes, &d.CreatedAt, &d.UpdatedAt); err != nil {
-			// bug-006: 返回 nil, nil 而非 nil, err
 			return nil, nil
 		}
 		d.LastInspection = nullTime(lastInspection)

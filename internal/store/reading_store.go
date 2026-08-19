@@ -203,7 +203,6 @@ func (s *Store) ListPorePressureReadings(ctx context.Context, pointID int64) ([]
 }
 
 // BatchCreateReadings 批量创建读数
-// bug-007: 遇到错误时 continue 而非返回错误
 func (s *Store) BatchCreateReadings(ctx context.Context, batch *model.BatchReadingInput) ([]int64, error) {
 	var ids []int64
 
@@ -211,7 +210,6 @@ func (s *Store) BatchCreateReadings(ctx context.Context, batch *model.BatchReadi
 		reading := input.ToSeepageReading()
 		created, err := s.CreateSeepageReading(ctx, reading)
 		if err != nil {
-			// bug-007: continue 而非 return
 			continue
 		}
 		ids = append(ids, created.ID)

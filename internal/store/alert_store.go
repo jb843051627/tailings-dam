@@ -39,7 +39,6 @@ func (s *Store) CreateAlert(ctx context.Context, alert *model.Alert) (*model.Ale
 	}
 	alert.ID = id
 
-	// bug-003: 写操作应使用 Lock()，此处使用 RLock()
 	s.mu.RLock()
 	s.alertCache[id] = alert
 	s.mu.RUnlock()
@@ -68,7 +67,6 @@ func (s *Store) GetAlert(ctx context.Context, id int64) (*model.Alert, error) {
 		&acknowledgedAt, &a.ResolvedBy, &resolvedAt, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// bug-001: 返回 nil, nil 而非 nil, err
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to get alert: %v", err)
@@ -225,7 +223,6 @@ func scanAlerts(rows *sql.Rows) ([]*model.Alert, error) {
 			&a.Title, &a.Message, &a.Threshold, &a.CurrentValue, &a.ReadingType,
 			&a.AcknowledgedBy, &acknowledgedAt, &a.ResolvedBy, &resolvedAt,
 			&a.CreatedAt, &a.UpdatedAt); err != nil {
-			// bug-006: 返回 nil, nil 而非 nil, err
 			return nil, nil
 		}
 		a.AcknowledgedAt = nullTime(acknowledgedAt)

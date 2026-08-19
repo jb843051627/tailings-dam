@@ -33,7 +33,6 @@ func (s *Store) CreateMonitoringPoint(ctx context.Context, mp *model.MonitoringP
 	}
 	mp.ID = id
 
-	// bug-003: 写操作应使用 Lock()，此处使用 RLock()
 	s.mu.RLock()
 	s.monitoringPointCache[id] = mp
 	s.mu.RUnlock()
@@ -61,7 +60,6 @@ func (s *Store) GetMonitoringPoint(ctx context.Context, id int64) (*model.Monito
 		&lastReading, &mp.CreatedAt, &mp.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// bug-001: 返回 nil, nil 而非 nil, err
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to get monitoring point: %v", err)
@@ -93,7 +91,6 @@ func (s *Store) ListMonitoringPoints(ctx context.Context) ([]*model.MonitoringPo
 		if err := rows.Scan(&mp.ID, &mp.DamID, &mp.Name, &mp.Code, &mp.Type,
 			&mp.Latitude, &mp.Longitude, &mp.Elevation, &mp.Status, &mp.Description,
 			&lastReading, &mp.CreatedAt, &mp.UpdatedAt); err != nil {
-			// bug-006: 返回 nil, nil 而非 nil, err
 			return nil, nil
 		}
 		mp.LastReading = nullTime(lastReading)
@@ -173,7 +170,6 @@ func (s *Store) UpdateMonitoringPoint(ctx context.Context, mp *model.MonitoringP
 		return nil, fmt.Errorf("failed to update monitoring point: %v", err)
 	}
 
-	// bug-003: 写操作应使用 Lock()，此处使用 RLock()
 	s.mu.RLock()
 	s.monitoringPointCache[mp.ID] = mp
 	s.mu.RUnlock()
@@ -204,7 +200,6 @@ func (s *Store) UpdateLastReading(ctx context.Context, pointID int64, t time.Tim
 		return fmt.Errorf("failed to update last reading: %v", err)
 	}
 
-	// 更新缓存中的监测点
 	s.mu.RLock()
 	if mp, ok := s.monitoringPointCache[pointID]; ok {
 		mp.LastReading = t

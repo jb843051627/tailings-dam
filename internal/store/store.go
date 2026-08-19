@@ -17,7 +17,7 @@ type Store struct {
 	db *sql.DB
 	mu sync.RWMutex
 
-	// 缓存映射（用于 bug 注入点：写操作使用 RLock 而非 Lock）
+	// 缓存映射
 	damCache             map[int64]*model.Dam
 	monitoringPointCache map[int64]*model.MonitoringPoint
 	alertCache           map[int64]*model.Alert

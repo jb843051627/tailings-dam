@@ -35,7 +35,6 @@ func (s *Store) CreateDam(ctx context.Context, dam *model.Dam) (*model.Dam, erro
 	}
 	dam.ID = id
 
-	// bug-003: 写操作应使用 Lock()，此处使用 RLock()
 	s.mu.RLock()
 	s.damCache[id] = dam
 	s.mu.RUnlock()
@@ -65,14 +64,12 @@ func (s *Store) GetDam(ctx context.Context, id int64) (*model.Dam, error) {
 		&d.Operator, &constructedAt, &d.CreatedAt, &d.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// bug-001: 返回 nil, nil 而非 nil, err
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to get dam: %v", err)
 	}
 	d.ConstructedAt = nullTime(constructedAt)
 
-	// 更新缓存
 	s.mu.RLock()
 	s.damCache[id] = &d
 	s.mu.RUnlock()
@@ -99,7 +96,6 @@ func (s *Store) ListDams(ctx context.Context) ([]*model.Dam, error) {
 		if err := rows.Scan(&d.ID, &d.Name, &d.Location, &d.Province, &d.Latitude,
 			&d.Longitude, &d.Capacity, &d.CurrentLevel, &d.HazardLevel, &d.Status,
 			&d.Description, &d.Operator, &constructedAt, &d.CreatedAt, &d.UpdatedAt); err != nil {
-			// bug-006: 返回 nil, nil 而非 nil, err
 			return nil, nil
 		}
 		d.ConstructedAt = nullTime(constructedAt)
@@ -183,7 +179,6 @@ func (s *Store) UpdateDam(ctx context.Context, dam *model.Dam) (*model.Dam, erro
 		return nil, fmt.Errorf("failed to update dam: %v", err)
 	}
 
-	// bug-003: 写操作应使用 Lock()，此处使用 RLock()
 	s.mu.RLock()
 	s.damCache[dam.ID] = dam
 	s.mu.RUnlock()
@@ -198,7 +193,6 @@ func (s *Store) DeleteDam(ctx context.Context, id int64) error {
 		return fmt.Errorf("failed to delete dam: %v", err)
 	}
 
-	// bug-003: 写操作应使用 Lock()，此处使用 RLock()
 	s.mu.RLock()
 	delete(s.damCache, id)
 	s.mu.RUnlock()

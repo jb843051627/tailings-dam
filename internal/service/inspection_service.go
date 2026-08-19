@@ -66,13 +66,9 @@ func (s *InspectionService) ListInspections(ctx context.Context) ([]*model.Inspe
 		return nil, fmt.Errorf("failed to list inspections: %v", err)
 	}
 
-	// bug-010: 不处理零时间值
-	// 如果 ScheduledDate 为零值，Before(now) 返回 true
-	// 这会错误地将零时间的巡检标记为逾期
 	now := time.Now()
 	for _, insp := range inspections {
 		if insp.Status == model.InspectionStatusPending {
-			// bug-010: 不检查 ScheduledDate 是否为零值
 			if insp.ScheduledDate.Before(now) {
 				insp.Status = model.InspectionStatusOverdue
 			}
