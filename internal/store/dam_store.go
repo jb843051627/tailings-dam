@@ -79,6 +79,13 @@ func (s *Store) GetDam(ctx context.Context, id int64) (*model.Dam, error) {
 
 // ListDams 列出所有尾矿坝
 func (s *Store) ListDams(ctx context.Context) ([]*model.Dam, error) {
+	s.mu.RLock()
+	if s.damListCache != nil {
+		s.mu.RUnlock()
+		return s.damListCache, nil
+	}
+	s.mu.RUnlock()
+
 	rows, err := s.db.QueryContext(ctx,
 		`SELECT id, name, location, province, latitude, longitude, capacity,
 			current_level, hazard_level, status, description, operator, constructed_at,
@@ -101,6 +108,10 @@ func (s *Store) ListDams(ctx context.Context) ([]*model.Dam, error) {
 		d.ConstructedAt = nullTime(constructedAt)
 		dams = append(dams, &d)
 	}
+
+	s.mu.RLock()
+	s.damListCache = dams
+	s.mu.RUnlock()
 
 	return dams, nil
 }

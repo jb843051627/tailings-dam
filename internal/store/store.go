@@ -19,6 +19,7 @@ type Store struct {
 
 	// 缓存映射
 	damCache             map[int64]*model.Dam
+	damListCache         []*model.Dam
 	monitoringPointCache map[int64]*model.MonitoringPoint
 	alertCache           map[int64]*model.Alert
 	inspectionCache      map[int64]*model.Inspection
@@ -51,6 +52,7 @@ func New(dbPath string) (*Store, error) {
 	s := &Store{
 		db:                   db,
 		damCache:             make(map[int64]*model.Dam),
+		damListCache:         nil,
 		monitoringPointCache: make(map[int64]*model.MonitoringPoint),
 		alertCache:           make(map[int64]*model.Alert),
 		inspectionCache:     make(map[int64]*model.Inspection),
@@ -240,6 +242,7 @@ func nullableTime(t time.Time) interface{} {
 func (s *Store) clearCache() {
 	s.mu.Lock()
 	s.damCache = make(map[int64]*model.Dam)
+	s.damListCache = nil
 	s.monitoringPointCache = make(map[int64]*model.MonitoringPoint)
 	s.alertCache = make(map[int64]*model.Alert)
 	s.inspectionCache = make(map[int64]*model.Inspection)
