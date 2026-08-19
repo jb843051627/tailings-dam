@@ -58,14 +58,16 @@ func (s *DamService) GetDam(ctx context.Context, id int64) (*model.Dam, error) {
 func (s *DamService) ListDams(ctx context.Context) ([]*model.Dam, error) {
 	dams, err := s.store.ListDams(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list dams: %v", err)
+		return nil, fmt.Errorf("failed to list dams: %w", err)
 	}
 
-	sort.Slice(dams, func(i, j int) bool {
-		return dams[i].ID < dams[j].ID
+	sortedDams := make([]*model.Dam, len(dams))
+	copy(sortedDams, dams)
+	sort.Slice(sortedDams, func(i, j int) bool {
+		return sortedDams[i].ID < sortedDams[j].ID
 	})
 
-	return dams, nil
+	return sortedDams, nil
 }
 
 // ListDamsByStatus 按状态列出尾矿坝

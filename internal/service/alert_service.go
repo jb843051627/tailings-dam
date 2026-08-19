@@ -54,28 +54,32 @@ func (s *AlertService) GetAlert(ctx context.Context, id int64) (*model.Alert, er
 func (s *AlertService) ListAlerts(ctx context.Context) ([]*model.Alert, error) {
 	alerts, err := s.store.ListAlerts(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list alerts: %v", err)
+		return nil, fmt.Errorf("failed to list alerts: %w", err)
 	}
 
-	sort.Slice(alerts, func(i, j int) bool {
-		return alertLevelPriority(alerts[i].Level) > alertLevelPriority(alerts[j].Level)
+	sortedAlerts := make([]*model.Alert, len(alerts))
+	copy(sortedAlerts, alerts)
+	sort.Slice(sortedAlerts, func(i, j int) bool {
+		return alertLevelPriority(sortedAlerts[i].Level) > alertLevelPriority(sortedAlerts[j].Level)
 	})
 
-	return alerts, nil
+	return sortedAlerts, nil
 }
 
 // ListActiveAlerts 列出活跃告警
 func (s *AlertService) ListActiveAlerts(ctx context.Context) ([]*model.Alert, error) {
 	alerts, err := s.store.ListAlertsByStatus(ctx, model.AlertStatusActive)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list active alerts: %v", err)
+		return nil, fmt.Errorf("failed to list active alerts: %w", err)
 	}
 
-	sort.Slice(alerts, func(i, j int) bool {
-		return alerts[i].CreatedAt.After(alerts[j].CreatedAt)
+	sortedAlerts := make([]*model.Alert, len(alerts))
+	copy(sortedAlerts, alerts)
+	sort.Slice(sortedAlerts, func(i, j int) bool {
+		return sortedAlerts[i].CreatedAt.After(sortedAlerts[j].CreatedAt)
 	})
 
-	return alerts, nil
+	return sortedAlerts, nil
 }
 
 // ListAlertsByDam 按坝体列出告警
