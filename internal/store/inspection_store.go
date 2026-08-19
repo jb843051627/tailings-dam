@@ -208,6 +208,12 @@ func (s *Store) GetPendingInspectionCount(ctx context.Context) (int64, error) {
 
 // BatchCreateInspections 批量创建巡检
 func (s *Store) BatchCreateInspections(ctx context.Context, inspections []*model.Inspection) ([]int64, error) {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %v", err)
+	}
+	defer tx.Rollback() // 在 Commit 成功后调用为 no-op
+
 	var ids []int64
 	for _, insp := range inspections {
 		now := time.Now()
@@ -219,7 +225,7 @@ func (s *Store) BatchCreateInspections(ctx context.Context, inspections []*model
 		if insp.Priority == "" {
 			insp.Priority = model.InspectionPriorityNormal
 		}
-		result, err := s.db.ExecContext(ctx,
+		result, err := tx.ExecContext(ctx,
 			`INSERT INTO inspections (dam_id, inspector, title, scheduled_date, completed_date,
 				findings, status, priority, created_at, updated_at)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -228,11 +234,15 @@ func (s *Store) BatchCreateInspections(ctx context.Context, inspections []*model
 			string(insp.Status), string(insp.Priority), insp.CreatedAt, insp.UpdatedAt,
 		)
 		if err != nil {
-			continue
+			return nil, fmt.Errorf("failed to insert inspection: %v", err)
 		}
 		id, _ := result.LastInsertId()
 		insp.ID = id
 		ids = append(ids, id)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %v", err)
 	}
 	return ids, nil
 }
