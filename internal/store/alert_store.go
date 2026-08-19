@@ -39,9 +39,9 @@ func (s *Store) CreateAlert(ctx context.Context, alert *model.Alert) (*model.Ale
 	}
 	alert.ID = id
 
-	s.mu.RLock()
+	s.mu.Lock()
 	s.alertCache[id] = alert
-	s.mu.RUnlock()
+	s.mu.Unlock()
 
 	return alert, nil
 }
@@ -160,9 +160,9 @@ func (s *Store) UpdateAlert(ctx context.Context, alert *model.Alert) (*model.Ale
 		return nil, fmt.Errorf("failed to update alert: %v", err)
 	}
 
-	s.mu.RLock()
+	s.mu.Lock()
 	s.alertCache[alert.ID] = alert
-	s.mu.RUnlock()
+	s.mu.Unlock()
 
 	return alert, nil
 }
@@ -178,14 +178,14 @@ func (s *Store) ResolveAlert(ctx context.Context, id int64, resolvedBy string) e
 		return fmt.Errorf("failed to resolve alert: %v", err)
 	}
 
-	s.mu.RLock()
+	s.mu.Lock()
 	if alert, ok := s.alertCache[id]; ok {
 		alert.Status = model.AlertStatusResolved
 		alert.ResolvedBy = resolvedBy
 		alert.ResolvedAt = now
 		alert.UpdatedAt = now
 	}
-	s.mu.RUnlock()
+	s.mu.Unlock()
 
 	return nil
 }
@@ -201,14 +201,14 @@ func (s *Store) AcknowledgeAlert(ctx context.Context, id int64, ackBy string) er
 		return fmt.Errorf("failed to acknowledge alert: %v", err)
 	}
 
-	s.mu.RLock()
+	s.mu.Lock()
 	if alert, ok := s.alertCache[id]; ok {
 		alert.Status = model.AlertStatusAcknowledged
 		alert.AcknowledgedBy = ackBy
 		alert.AcknowledgedAt = now
 		alert.UpdatedAt = now
 	}
-	s.mu.RUnlock()
+	s.mu.Unlock()
 
 	return nil
 }

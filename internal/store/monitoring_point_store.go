@@ -33,9 +33,9 @@ func (s *Store) CreateMonitoringPoint(ctx context.Context, mp *model.MonitoringP
 	}
 	mp.ID = id
 
-	s.mu.RLock()
+	s.mu.Lock()
 	s.monitoringPointCache[id] = mp
-	s.mu.RUnlock()
+	s.mu.Unlock()
 
 	return mp, nil
 }
@@ -170,9 +170,9 @@ func (s *Store) UpdateMonitoringPoint(ctx context.Context, mp *model.MonitoringP
 		return nil, fmt.Errorf("failed to update monitoring point: %v", err)
 	}
 
-	s.mu.RLock()
+	s.mu.Lock()
 	s.monitoringPointCache[mp.ID] = mp
-	s.mu.RUnlock()
+	s.mu.Unlock()
 
 	return mp, nil
 }
@@ -184,9 +184,9 @@ func (s *Store) DeleteMonitoringPoint(ctx context.Context, id int64) error {
 		return fmt.Errorf("failed to delete monitoring point: %v", err)
 	}
 
-	s.mu.RLock()
+	s.mu.Lock()
 	delete(s.monitoringPointCache, id)
-	s.mu.RUnlock()
+	s.mu.Unlock()
 
 	return nil
 }
@@ -200,12 +200,12 @@ func (s *Store) UpdateLastReading(ctx context.Context, pointID int64, t time.Tim
 		return fmt.Errorf("failed to update last reading: %v", err)
 	}
 
-	s.mu.RLock()
+	s.mu.Lock()
 	if mp, ok := s.monitoringPointCache[pointID]; ok {
 		mp.LastReading = t
 		mp.UpdatedAt = time.Now()
 	}
-	s.mu.RUnlock()
+	s.mu.Unlock()
 
 	return nil
 }

@@ -38,9 +38,9 @@ func (s *Store) CreateDrainageSystem(ctx context.Context, d *model.DrainageSyste
 	}
 	d.ID = id
 
-	s.mu.RLock()
+	s.mu.Lock()
 	s.drainageCache[id] = d
-	s.mu.RUnlock()
+	s.mu.Unlock()
 
 	return d, nil
 }
@@ -139,9 +139,9 @@ func (s *Store) UpdateDrainageSystem(ctx context.Context, d *model.DrainageSyste
 		return nil, fmt.Errorf("failed to update drainage system: %v", err)
 	}
 
-	s.mu.RLock()
+	s.mu.Lock()
 	s.drainageCache[d.ID] = d
-	s.mu.RUnlock()
+	s.mu.Unlock()
 
 	return d, nil
 }
@@ -153,9 +153,9 @@ func (s *Store) DeleteDrainageSystem(ctx context.Context, id int64) error {
 		return fmt.Errorf("failed to delete drainage system: %v", err)
 	}
 
-	s.mu.RLock()
+	s.mu.Lock()
 	delete(s.drainageCache, id)
-	s.mu.RUnlock()
+	s.mu.Unlock()
 
 	return nil
 }

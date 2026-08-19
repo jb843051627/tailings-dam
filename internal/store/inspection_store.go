@@ -39,9 +39,9 @@ func (s *Store) CreateInspection(ctx context.Context, insp *model.Inspection) (*
 	}
 	insp.ID = id
 
-	s.mu.RLock()
+	s.mu.Lock()
 	s.inspectionCache[id] = insp
-	s.mu.RUnlock()
+	s.mu.Unlock()
 
 	return insp, nil
 }
@@ -137,9 +137,9 @@ func (s *Store) UpdateInspection(ctx context.Context, insp *model.Inspection) (*
 		return nil, fmt.Errorf("failed to update inspection: %v", err)
 	}
 
-	s.mu.RLock()
+	s.mu.Lock()
 	s.inspectionCache[insp.ID] = insp
-	s.mu.RUnlock()
+	s.mu.Unlock()
 
 	return insp, nil
 }
@@ -155,14 +155,14 @@ func (s *Store) CompleteInspection(ctx context.Context, id int64, findings strin
 		return fmt.Errorf("failed to complete inspection: %v", err)
 	}
 
-	s.mu.RLock()
+	s.mu.Lock()
 	if insp, ok := s.inspectionCache[id]; ok {
 		insp.Status = model.InspectionStatusCompleted
 		insp.CompletedDate = now
 		insp.Findings = findings
 		insp.UpdatedAt = now
 	}
-	s.mu.RUnlock()
+	s.mu.Unlock()
 
 	return nil
 }

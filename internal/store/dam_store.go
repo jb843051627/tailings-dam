@@ -35,9 +35,9 @@ func (s *Store) CreateDam(ctx context.Context, dam *model.Dam) (*model.Dam, erro
 	}
 	dam.ID = id
 
-	s.mu.RLock()
+	s.mu.Lock()
 	s.damCache[id] = dam
-	s.mu.RUnlock()
+	s.mu.Unlock()
 
 	return dam, nil
 }
@@ -179,9 +179,9 @@ func (s *Store) UpdateDam(ctx context.Context, dam *model.Dam) (*model.Dam, erro
 		return nil, fmt.Errorf("failed to update dam: %v", err)
 	}
 
-	s.mu.RLock()
+	s.mu.Lock()
 	s.damCache[dam.ID] = dam
-	s.mu.RUnlock()
+	s.mu.Unlock()
 
 	return dam, nil
 }
@@ -193,9 +193,9 @@ func (s *Store) DeleteDam(ctx context.Context, id int64) error {
 		return fmt.Errorf("failed to delete dam: %v", err)
 	}
 
-	s.mu.RLock()
+	s.mu.Lock()
 	delete(s.damCache, id)
-	s.mu.RUnlock()
+	s.mu.Unlock()
 
 	return nil
 }
