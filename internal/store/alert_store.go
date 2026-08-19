@@ -100,8 +100,9 @@ func (s *Store) ListAlerts(ctx context.Context) ([]*model.Alert, error) {
 func (s *Store) ListAlertsByDam(ctx context.Context, damID int64) ([]*model.Alert, error) {
 	s.mu.RLock()
 	if s.alertByDamCache != nil {
+		cached := s.alertByDamCache
 		s.mu.RUnlock()
-		return s.alertByDamCache, nil
+		return copyAlerts(cached), nil
 	}
 	s.mu.RUnlock()
 
@@ -124,15 +125,16 @@ func (s *Store) ListAlertsByDam(ctx context.Context, damID int64) ([]*model.Aler
 	s.alertByDamCache = alerts
 	s.mu.RUnlock()
 
-	return alerts, nil
+	return copyAlerts(alerts), nil
 }
 
 // ListAlertsByStatus 按状态列出告警
 func (s *Store) ListAlertsByStatus(ctx context.Context, status model.AlertStatus) ([]*model.Alert, error) {
 	s.mu.RLock()
 	if s.alertByStatusCache != nil {
+		cached := s.alertByStatusCache
 		s.mu.RUnlock()
-		return s.alertByStatusCache, nil
+		return copyAlerts(cached), nil
 	}
 	s.mu.RUnlock()
 
@@ -155,7 +157,7 @@ func (s *Store) ListAlertsByStatus(ctx context.Context, status model.AlertStatus
 	s.alertByStatusCache = alerts
 	s.mu.RUnlock()
 
-	return alerts, nil
+	return copyAlerts(alerts), nil
 }
 
 // ListAlertsByLevel 按等级列出告警
@@ -243,6 +245,19 @@ func (s *Store) AcknowledgeAlert(ctx context.Context, id int64, ackBy string) er
 	s.mu.RUnlock()
 
 	return nil
+}
+
+// copyAlerts 深拷贝告警切片，确保调用方对返回值的修改（含字段写入与原地排序）不会污染缓存
+func copyAlerts(alerts []*model.Alert) []*model.Alert {
+	if alerts == nil {
+		return nil
+	}
+	out := make([]*model.Alert, len(alerts))
+	for i, a := range alerts {
+		c := *a
+		out[i] = &c
+	}
+	return out
 }
 
 // scanAlerts 扫描告警行集
