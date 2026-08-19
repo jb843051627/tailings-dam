@@ -57,10 +57,8 @@ func (s *MonitoringService) GetMonitoringPoint(ctx context.Context, id int64) (*
 		return nil, ErrPointNotFound
 	}
 
-	if !mp.LastReading.IsZero() {
-
-	} else {
-		mp.LastReading = mp.LastReading
+	if mp.LastReading.IsZero() {
+		mp.LastReading = mp.CreatedAt
 	}
 
 	return mp, nil

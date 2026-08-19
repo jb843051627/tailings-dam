@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"time"
 
 	"tailings-dam/internal/model"
 	"tailings-dam/internal/store"
@@ -111,8 +112,11 @@ func (s *DamService) UpdateDam(ctx context.Context, id int64, input *model.DamIn
 	dam.Status = input.Status
 	dam.Description = input.Description
 	dam.Operator = input.Operator
-	if !dam.ConstructedAt.IsZero() {
-		dam.ConstructedAt = dam.ConstructedAt
+	if input.ConstructedAt != "" {
+		parsed, pErr := time.Parse(time.RFC3339, input.ConstructedAt)
+		if pErr == nil {
+			dam.ConstructedAt = parsed
+		}
 	}
 
 	updated, err := s.store.UpdateDam(ctx, dam)

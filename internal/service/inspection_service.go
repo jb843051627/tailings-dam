@@ -69,7 +69,7 @@ func (s *InspectionService) ListInspections(ctx context.Context) ([]*model.Inspe
 	now := time.Now()
 	for _, insp := range inspections {
 		if insp.Status == model.InspectionStatusPending {
-			if insp.ScheduledDate.Before(now) {
+			if !insp.ScheduledDate.IsZero() && insp.ScheduledDate.Before(now) {
 				insp.Status = model.InspectionStatusOverdue
 			}
 		}
@@ -122,7 +122,7 @@ func (s *InspectionService) GetInspectionSummary(ctx context.Context) (*model.In
 		summary.Total++
 		switch insp.Status {
 		case model.InspectionStatusPending:
-			if insp.ScheduledDate.Before(now) {
+			if !insp.ScheduledDate.IsZero() && insp.ScheduledDate.Before(now) {
 				summary.Overdue++
 			} else {
 				summary.Pending++
