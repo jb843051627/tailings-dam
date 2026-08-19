@@ -240,6 +240,19 @@ func nullableTime(t time.Time) interface{} {
 	return t
 }
 
+// deepCopyAlerts returns a deep copy of the given alert slice
+func deepCopyAlerts(src []*model.Alert) []*model.Alert {
+	if src == nil {
+		return nil
+	}
+	dst := make([]*model.Alert, len(src))
+	for i, a := range src {
+		cp := *a
+		dst[i] = &cp
+	}
+	return dst
+}
+
 // clearCache 清除所有缓存
 func (s *Store) clearCache() {
 	s.mu.Lock()
